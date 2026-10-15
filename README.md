@@ -11,22 +11,22 @@ or in PlatformIO with `lib_deps = koebelt/KoebeltLink@^1.0.0`.
 ```cpp
 #include <KoebeltLink.h>
 
-KLink link("Kite-03", KLink::DRONE);
+KLink klink("Kite-03", KLink::DRONE);
 
 void setup() {
-  link.begin(WIFI_SSID, WIFI_PASS);         // or beginBLE(), beginSerial(Serial)
-  link.onControl([](const KControl& c) { throttle = c.ly; yaw = c.lx; pitch = c.ry; roll = c.rx; });
-  link.onStop([] { motors.cut(); });
-  link.failsafe(1800, KMode::HOLD);
+  klink.begin(WIFI_SSID, WIFI_PASS);         // or beginBLE(), beginSerial(Serial)
+  klink.onControl([](const KControl& c) { throttle = c.ly; yaw = c.lx; pitch = c.ry; roll = c.rx; });
+  klink.onStop([] { motors.cut(); });
+  klink.failsafe(1800, KMode::HOLD);
   Serial2.begin(57600);
-  link.beginRadio(Serial2, KRadio::SIK);    // a second link takes over when Wi-Fi drops
-  link.video(":81/stream", "cam", "mjpeg", "Front");   // a camera the app shows
+  klink.beginRadio(Serial2, KRadio::SIK);    // a second link takes over when Wi-Fi drops
+  klink.video(":81/stream", "cam", "mjpeg", "Front");   // a camera the app shows
 }
 
 void loop() {
-  link.imu(ax, ay, az, gx, gy, gz);
-  link.battery(vbat, pct);
-  link.update();                            // non-blocking
+  klink.imu(ax, ay, az, gx, gy, gz);
+  klink.battery(vbat, pct);
+  klink.update();                            // non-blocking
 }
 ```
 
@@ -43,6 +43,10 @@ void loop() {
 | BLE through NimBLE-Arduino (ESP32), Adafruit Bluefruit (nRF52), ArduinoBLE | those boards |
 | Pairing key and params in flash | ESP32 (NVS). Other boards keep them in RAM until reboot. |
 
+**ESP32 with Wi-Fi and Bluetooth in one sketch** does not fit the default
+1.2 MB app partition: pick Tools > Partition Scheme > Huge APP, or use
+NimBLE-Arduino (include `<NimBLEDevice.h>`), which is much smaller.
+
 **Libraries that are not part of your board's core** (WiFiNINA, WiFi101,
 ArduinoBLE, NimBLE-Arduino, LoRa) are used once your sketch includes their
 header: the Arduino IDE only links libraries a sketch includes. Stacks that
@@ -53,10 +57,10 @@ Adafruit nRF52 Bluefruit) need nothing.
 
 ```cpp
 EthernetUDP udp;             // or WiFiUDP from WiFiEspAT, WiFi101, QNEthernet…
-link.beginUdp(udp);          // any library's UDP object
+klink.beginUdp(udp);          // any library's UDP object
 
 Serial1.begin(9600);         // HM-10, HC-05, JDY, RN4870, Bluno… on a UART
-link.beginModule(Serial1, 9600);
+klink.beginModule(Serial1, 9600);
 ```
 
 Callbacks are plain function pointers (capture-less lambdas), so the library
